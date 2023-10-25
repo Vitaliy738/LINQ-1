@@ -9,32 +9,50 @@ public class QueryHelper : IQueryHelper
     /// <summary>
     /// Get Deliveries that has payed
     /// </summary>
-    public IEnumerable<Delivery> Paid(IEnumerable<Delivery> deliveries) => new List<Delivery>(); //TODO: Завдання 1
+    public IEnumerable<Delivery> Paid(IEnumerable<Delivery> deliveries) => 
+    deliveries.Where(x => x.PaymentId != null); //TODO: Завдання 1
 
     /// <summary>
     /// Get Deliveries that now processing by system (not Canceled or Done)
     /// </summary>
-    public IEnumerable<Delivery> NotFinished(IEnumerable<Delivery> deliveries) => new List<Delivery>(); //TODO: Завдання 2
+    public IEnumerable<Delivery> NotFinished(IEnumerable<Delivery> deliveries) => 
+    deliveries.Where(x => x.Status != DeliveryStatus.Cancelled && x.Status != DeliveryStatus.Done); //TODO: Завдання 2
     
     /// <summary>
     /// Get DeliveriesShortInfo from deliveries of specified client
     /// </summary>
-    public IEnumerable<DeliveryShortInfo> DeliveryInfosByClient(IEnumerable<Delivery> deliveries, string clientId) => new List<DeliveryShortInfo>(); //TODO: Завдання 3
+    public IEnumerable<DeliveryShortInfo> DeliveryInfosByClient(IEnumerable<Delivery> deliveries, string clientId) => 
+    deliveries.Where(x => x.ClientId == clientId).Select(delivery => new DeliveryShortInfo
+        {
+            Id = delivery.Id,
+            StartCity = delivery.Direction.Origin.City,
+            EndCity = delivery.Direction.Destination.City,
+            ClientId = delivery.ClientId,
+            Type = delivery.Type,
+            LoadingPeriod = delivery.LoadingPeriod,
+            ArrivalPeriod = delivery.ArrivalPeriod,
+            Status = delivery.Status,
+            CargoType = delivery.CargoType
+        }); //TODO: Завдання 3
     
     /// <summary>
     /// Get first ten Deliveries that starts at specified city and have specified type
     /// </summary>
-    public IEnumerable<Delivery> DeliveriesByCityAndType(IEnumerable<Delivery> deliveries, string cityName, DeliveryType type) => new List<Delivery>();//TODO: Завдання 4
+    public IEnumerable<Delivery> DeliveriesByCityAndType(IEnumerable<Delivery> deliveries, string cityName, DeliveryType type) => 
+    deliveries.Where(x => x.Type == type && x.Direction.Origin.City == cityName)
+            .Take(10);//TODO: Завдання 4
     
     /// <summary>
     /// Order deliveries by status, then by start of loading period
     /// </summary>
-    public IEnumerable<Delivery> OrderByStatusThenByStartLoading(IEnumerable<Delivery> deliveries) => new List<Delivery>();//TODO: Завдання 5
+    public IEnumerable<Delivery> OrderByStatusThenByStartLoading(IEnumerable<Delivery> deliveries) => 
+    deliveries.OrderBy(x => x.Status).ThenBy(x => x.LoadingPeriod.Start);//TODO: Завдання 5
 
     /// <summary>
     /// Count unique cargo types
     /// </summary>
-    public int CountUniqCargoTypes(IEnumerable<Delivery> deliveries) => 0; //TODO: Завдання 6
+    public int CountUniqCargoTypes(IEnumerable<Delivery> deliveries) => 
+    deliveries.Distinct().Count(); //TODO: Завдання 6
     
     /// <summary>
     /// Group deliveries by status and count deliveries in each group
