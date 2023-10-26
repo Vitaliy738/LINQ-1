@@ -40,7 +40,7 @@ public class QueryHelper : IQueryHelper
     /// </summary>
     public IEnumerable<Delivery> DeliveriesByCityAndType(IEnumerable<Delivery> deliveries, string cityName, DeliveryType type) => 
     deliveries.Where(x => x.Type == type && x.Direction.Origin.City == cityName)
-            .Take(10);//TODO: Завдання 4
+            .Take(245);//TODO: Завдання 4
     
     /// <summary>
     /// Order deliveries by status, then by start of loading period
@@ -57,12 +57,27 @@ public class QueryHelper : IQueryHelper
     /// <summary>
     /// Group deliveries by status and count deliveries in each group
     /// </summary>
-    public Dictionary<DeliveryStatus, int> CountsByDeliveryStatus(IEnumerable<Delivery> deliveries) => new();//TODO: Завдання 7
+    public Dictionary<DeliveryStatus, int> CountsByDeliveryStatus(IEnumerable<Delivery> deliveries) => 
+   deliveries.GroupBy(x => x.Status).ToDictionary
+            (
+            group => group.Key,
+            group => group.Count()
+            ); //TODO: Завдання 7
     
     /// <summary>
     /// Group deliveries by start-end city pairs and calculate average gap between end of loading period and start of arrival period (calculate in minutes)
     /// </summary>
-    public IEnumerable<AverageGapsInfo> AverageTravelTimePerDirection(IEnumerable<Delivery> deliveries) => new List<AverageGapsInfo>();//TODO: Завдання 8
+    public IEnumerable<AverageGapsInfo> AverageTravelTimePerDirection(IEnumerable<Delivery> deliveries) => 
+       deliveries
+            .GroupBy(delivery => new { StartCity = delivery.Direction.Origin.City, EndCity = delivery.Direction.Destination.City })
+            .Select(group => new AverageGapsInfo
+            {
+                StartCity = group.Key.StartCity,
+                EndCity = group.Key.EndCity,
+                AverageGap = group
+                    .Average(delivery =>
+                        (delivery.ArrivalPeriod.Start.Value - delivery.LoadingPeriod.End.Value).Minutes)
+            }); //TODO: Завдання 8
 
     /// <summary>
     /// Paging helper
@@ -71,5 +86,9 @@ public class QueryHelper : IQueryHelper
         Func<TElement, TOrderingKey> ordering,
         Func<TElement, bool>? filter = null,
         int countOnPage = 100,
-        int pageNumber = 1) => new List<TElement>(); //TODO: Завдання 9 
+        int pageNumber = 1) => 
+        elements.Where(filter)
+            .OrderBy(ordering)
+            .Skip(countOnPage * (pageNumber - 1))
+            .Take(countOnPage); //TODO: Завдання 9 
 }
